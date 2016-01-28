@@ -1,18 +1,26 @@
 define(['jquery'], function($) {
-  var categoriesPageGenerator = function*() {
+  var categoriesPageGenerator = function*(initialCategory) {
+    var currentCategory = initialCategory;
     var page = 1;
+
     while(true) {
-      $.get('http://www.elo7.com.br/categoria/acessorios?sortBy=4&pageNum=' + page, function(data) {
+      $.get(currentCategory + '?sortBy=4&pageNum=' + page, function(data) {
         $(data).find('.product').appendTo($('#products'));
       });
-      yield page++;
+
+      var nextCategory = yield page++;
+      if(currentCategory != nextCategory) {
+        page = 1;
+        currentCategory = nextCategory;
+        $('#products').empty();
+      }
     }
   };
 
-  var categoryPages = categoriesPageGenerator();
+  var categoryPages = categoriesPageGenerator('http://www.elo7.com.br/categoria/acessorios');
   categoryPages.next();
   $('.category').on('click', function(e) {
-    categoryPages.next();
+    categoryPages.next(this.href);
     e.preventDefault();
   });
 });
